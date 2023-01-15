@@ -1,38 +1,41 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-namespace _2421NumberOfGoodPaths;
+﻿namespace _2421NumberOfGoodPaths;
 
 public class Solution
 {
+    private static int[] _vals;
     public static int NumberOfGoodPaths(int[] vals, int[][] edges)
     {
+        _vals = vals;
         var sortedEdges = edges.OrderBy(x => Math.Max(vals[x[0]], vals[x[1]]));
         var n = vals.Length;
         var goodPaths = n;
         var par = Enumerable.Range(0, n).ToArray();
         var rank = Enumerable.Repeat(1, n).ToArray();
 
-        foreach (var edge in sortedEdges)
-        {
-            var a = edge[0];
-            var b = edge[1];
-            var parentA = FindParent(a, par);
-            var parentB = FindParent(b, par);
+        goodPaths += (from edge in sortedEdges
+            let parentA = FindParent(edge[0], par)
+            let parentB = FindParent(edge[1], par)
+            select GoodPaths(parentA, parentB, rank, par)).Sum();
 
-            if (vals[parentA] == vals[parentB])
-            {
-                goodPaths += rank[parentA] * rank[parentB];
-                par[parentA] = parentB;
-                rank[parentB] += rank[parentA];
-            }
-            else if (vals[parentA] > vals[parentB])
-            {
-                par[parentB] = parentA;
-            }
-            else
-            {
-                par[parentA] = parentB;
-            }
+        return goodPaths;
+    }
+
+    private static int GoodPaths(int parentA, int parentB,  IList<int> rank, IList<int> par)
+    {
+        var goodPaths = 0;
+        if (_vals[parentA] == _vals[parentB])
+        {
+            goodPaths += rank[parentA] * rank[parentB];
+            par[parentA] = parentB;
+            rank[parentB] += rank[parentA];
+        }
+        else if (_vals[parentA] > _vals[parentB])
+        {
+            par[parentB] = parentA;
+        }
+        else
+        {
+            par[parentA] = parentB;
         }
 
         return goodPaths;
